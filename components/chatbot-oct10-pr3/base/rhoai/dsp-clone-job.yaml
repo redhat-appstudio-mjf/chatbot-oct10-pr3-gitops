@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dsp-clone-job-chatbot-oct10-pr3-gitops
+spec:  
+  template:         
+    metadata:
+      name: dsp-clone-job-chatbot-oct10-pr3-gitops
+    spec:  
+      serviceAccountName: chatbot-oct10-pr3-dsp-job
+      containers:
+      - name: initialize-dsp
+        image: quay.io/redhat-ai-dev/utils:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+          oc wait -l statefulset=chatbot-oct10-pr3-notebook --for=condition=ready pod --timeout=300s
+          oc exec  StatefulSet/chatbot-oct10-pr3-notebook -- git clone https://github.com/redhat-appstudio-mjf/chatbot-oct10-pr3
+      restartPolicy: Never
